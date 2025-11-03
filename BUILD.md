@@ -88,9 +88,43 @@ Após a build, os arquivos estarão na pasta `dist/`:
   - `Catnip Secure Browser-1.0.0-x64.zip` - Versão compactada
 
 - **Linux:**
-  - `Catnip Secure Browser-1.0.0-x64.AppImage` - Executável universal
-  - `Catnip Secure Browser-1.0.0-x64.deb` - Pacote Debian
+  - `Catnip Secure Browser-1.0.0-amd64.deb` - Pacote Debian
   - `Catnip Secure Browser-1.0.0-x64.rpm` - Pacote RPM
+
+## Resolução de Problemas
+
+### Aplicativo não abre após instalação (Linux)
+
+1. **Execute pelo terminal para ver erros:**
+   ```bash
+   /opt/Catnip\ Secure\ Browser/catnip-secure-browser
+   ```
+   Ou se estiver no PATH:
+   ```bash
+   catnip-secure-browser
+   ```
+
+2. **Verifique os logs de erro:**
+   ```bash
+   catnip-secure-browser 2>&1 | tee catnip-error.log
+   ```
+
+3. **Verifique se o executável tem permissão:**
+   ```bash
+   ls -la /opt/Catnip\ Secure\ Browser/
+   chmod +x /opt/Catnip\ Secure\ Browser/catnip-secure-browser
+   ```
+
+4. **Verifique dependências do sistema:**
+   ```bash
+   ldd /opt/Catnip\ Secure\ Browser/catnip-secure-browser | grep "not found"
+   ```
+
+5. **Verifique se os arquivos necessários estão presentes:**
+   ```bash
+   ls -la /opt/Catnip\ Secure\ Browser/resources/
+   ```
+   Deve conter: `main.js`, `preload.js`, `utils/`, `database/`, `dist-electron/`
 
 ## Notas Importantes
 
