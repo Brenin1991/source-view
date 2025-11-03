@@ -22,6 +22,25 @@
   overflow-y: auto;
 }
 
+/* Scrollbar para Settings Sidebar */
+.settings-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-sidebar::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.settings-sidebar::-webkit-scrollbar-thumb {
+  background: var(--bg-hover);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.settings-sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
 .settings-nav-item {
   width: 100%;
   padding: 12px 20px;
@@ -91,6 +110,31 @@
   flex-direction: column;
   overflow-y: auto;
   padding: 24px;
+}
+
+/* Scrollbar para Settings Content */
+.settings-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.settings-content::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border-light);
+}
+
+.settings-content::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 5px;
+  border: 2px solid var(--bg-primary);
+  transition: background 0.2s ease;
+}
+
+.settings-content::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-hover);
+}
+
+.settings-content::-webkit-scrollbar-thumb:active {
+  background: var(--accent);
 }
 
 .section-title {
@@ -206,6 +250,74 @@
   margin-top: 32px;
   padding-top: 24px;
   border-top: 1px solid var(--border);
+}
+
+.encryption-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.encryption-item {
+  margin-bottom: 20px;
+}
+
+.encryption-actions {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.encryption-actions button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.encryption-note {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.encryption-info {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.encryption-info h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.encryption-info ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.encryption-info li {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.encryption-info li:before {
+  content: "•";
+  color: var(--accent);
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
 }
 
 .btn-danger {

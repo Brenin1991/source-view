@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import './WebViewContainer.css';
 
-function WebViewContainer({ tabs, activeTabId, hasError, onTitleUpdate, onUrlUpdate, onLoadingChange, onError }) {
+function WebViewContainer({ tabs, activeTabId, hasError, onTitleUpdate, onUrlUpdate, onLoadingChange, onFaviconUpdate, onError }) {
   const containerRef = useRef(null);
   const webviewRefs = useRef({});
 
@@ -49,10 +49,146 @@ function WebViewContainer({ tabs, activeTabId, hasError, onTitleUpdate, onUrlUpd
 
         webview.addEventListener('did-stop-loading', () => {
           onLoadingChange(tab.id, false);
+          
+          // Injetar CSS de scrollbar quando a página terminar de carregar
+          setTimeout(() => {
+            try {
+              // Obter cores do tema atual do documento principal
+              const rootStyles = getComputedStyle(document.documentElement);
+              const bgPrimary = rootStyles.getPropertyValue('--bg-primary')?.trim() || '#1c1c1e';
+              const bgTertiary = rootStyles.getPropertyValue('--bg-tertiary')?.trim() || '#3a3a3c';
+              const bgHover = rootStyles.getPropertyValue('--bg-hover')?.trim() || '#48484a';
+              const accent = rootStyles.getPropertyValue('--accent')?.trim() || '#007aff';
+              const borderLight = rootStyles.getPropertyValue('--border-light')?.trim() || 'rgba(255, 255, 255, 0.05)';
+
+              const scrollbarCSS = `
+                /* Scrollbar customizada adaptável ao tema */
+                ::-webkit-scrollbar {
+                  width: 12px;
+                  height: 12px;
+                }
+                
+                ::-webkit-scrollbar-track {
+                  background: ${bgPrimary};
+                  border-left: 1px solid ${borderLight};
+                }
+                
+                ::-webkit-scrollbar-thumb {
+                  background: ${bgTertiary};
+                  border-radius: 6px;
+                  border: 2px solid ${bgPrimary};
+                  transition: background 0.2s ease;
+                }
+                
+                ::-webkit-scrollbar-thumb:hover {
+                  background: ${bgHover};
+                }
+                
+                ::-webkit-scrollbar-thumb:active {
+                  background: ${accent};
+                }
+                
+                ::-webkit-scrollbar-corner {
+                  background: ${bgPrimary};
+                }
+                
+                /* Firefox */
+                * {
+                  scrollbar-width: thin;
+                  scrollbar-color: ${bgTertiary} ${bgPrimary};
+                }
+              `;
+              
+              if (webview && webview.insertCSS) {
+                webview.insertCSS(scrollbarCSS).catch(err => {
+                  console.warn('Erro ao injetar CSS de scrollbar no webview (did-stop-loading):', err);
+                });
+              }
+            } catch (error) {
+              console.warn('Erro ao tentar injetar CSS de scrollbar (did-stop-loading):', error);
+            }
+          }, 300);
+          
+          // Tentar obter favicon após carregar a página
+          setTimeout(() => {
+            try {
+              const webviewUrl = webview.src || tab.url;
+              if (webviewUrl && webviewUrl !== 'about:blank' && !webviewUrl.startsWith('about:')) {
+                // Tentar obter favicon via JavaScript do webview
+                webview.executeJavaScript(`
+                  (function() {
+                    const links = document.querySelectorAll('link[rel*="icon"]');
+                    if (links.length > 0) {
+                      return links[0].href;
+                    }
+                    // Fallback: tentar /favicon.ico
+                    try {
+                      const url = new URL(window.location.href);
+                      return url.origin + '/favicon.ico';
+                    } catch(e) {
+                      return null;
+                    }
+                  })();
+                `).then((faviconUrl) => {
+                  if (faviconUrl && onFaviconUpdate) {
+                    console.log('✅ Favicon obtido via executeJavaScript:', faviconUrl);
+                    onFaviconUpdate(tab.id, faviconUrl);
+                  }
+                }).catch(err => {
+                  console.warn('Erro ao obter favicon via executeJavaScript:', err);
+                  
+                  // Fallback final: usar URL base + /favicon.ico
+                  try {
+                    const urlObj = new URL(webviewUrl);
+                    const faviconFallback = `${urlObj.protocol}//${urlObj.host}/favicon.ico`;
+                    if (onFaviconUpdate) {
+                      console.log('🔄 Usando favicon fallback final:', faviconFallback);
+                      onFaviconUpdate(tab.id, faviconFallback);
+                    }
+                  } catch (e) {
+                    console.warn('Não foi possível gerar favicon fallback');
+                  }
+                });
+              }
+            } catch (error) {
+              console.warn('Erro ao tentar obter favicon:', error);
+            }
+          }, 500);
         });
 
         webview.addEventListener('page-title-updated', (e) => {
           onTitleUpdate(tab.id, e.title || 'Sem título');
+        });
+
+        webview.addEventListener('page-favicon-updated', (e) => {
+          console.log('🔔 page-favicon-updated event:', e);
+          console.log('🔔 Event details:', {
+            favicons: e.favicons,
+            type: typeof e.favicons,
+            length: e.favicons?.length
+          });
+          
+          // O evento pode ter favicons como array ou como propriedade
+          const favicons = e.favicons || (Array.isArray(e) ? e : []);
+          
+          if (favicons && favicons.length > 0 && onFaviconUpdate) {
+            const faviconUrl = favicons[0];
+            console.log('✅ Atualizando favicon para tab', tab.id, ':', faviconUrl);
+            onFaviconUpdate(tab.id, faviconUrl);
+          } else if (onFaviconUpdate) {
+            // Tentar obter favicon da URL diretamente como fallback
+            const tabUrl = tab.url || webview.src;
+            if (tabUrl && tabUrl !== 'about:blank' && !tabUrl.startsWith('about:')) {
+              try {
+                const urlObj = new URL(tabUrl);
+                const faviconFallback = `${urlObj.protocol}//${urlObj.host}/favicon.ico`;
+                console.log('🔄 Tentando favicon fallback:', faviconFallback);
+                onFaviconUpdate(tab.id, faviconFallback);
+              } catch (err) {
+                console.warn('Erro ao gerar favicon fallback:', err);
+              }
+            }
+          }
         });
 
         webview.addEventListener('did-navigate', (e) => {
@@ -100,6 +236,63 @@ function WebViewContainer({ tabs, activeTabId, hasError, onTitleUpdate, onUrlUpd
             errorState.hasError = false;
             errorState.errorCode = null;
           }, 200);
+
+          // Injetar CSS customizado para scrollbar no webview
+          try {
+            // Obter cores do tema atual do documento principal
+            const rootStyles = getComputedStyle(document.documentElement);
+            const bgPrimary = rootStyles.getPropertyValue('--bg-primary')?.trim() || '#1c1c1e';
+            const bgTertiary = rootStyles.getPropertyValue('--bg-tertiary')?.trim() || '#3a3a3c';
+            const bgHover = rootStyles.getPropertyValue('--bg-hover')?.trim() || '#48484a';
+            const accent = rootStyles.getPropertyValue('--accent')?.trim() || '#007aff';
+            const borderLight = rootStyles.getPropertyValue('--border-light')?.trim() || 'rgba(255, 255, 255, 0.05)';
+
+            const scrollbarCSS = `
+              /* Scrollbar customizada adaptável ao tema */
+              ::-webkit-scrollbar {
+                width: 12px;
+                height: 12px;
+              }
+              
+              ::-webkit-scrollbar-track {
+                background: ${bgPrimary};
+                border-left: 1px solid ${borderLight};
+              }
+              
+              ::-webkit-scrollbar-thumb {
+                background: ${bgTertiary};
+                border-radius: 6px;
+                border: 2px solid ${bgPrimary};
+                transition: background 0.2s ease;
+              }
+              
+              ::-webkit-scrollbar-thumb:hover {
+                background: ${bgHover};
+              }
+              
+              ::-webkit-scrollbar-thumb:active {
+                background: ${accent};
+              }
+              
+              ::-webkit-scrollbar-corner {
+                background: ${bgPrimary};
+              }
+              
+              /* Firefox */
+              * {
+                scrollbar-width: thin;
+                scrollbar-color: ${bgTertiary} ${bgPrimary};
+              }
+            `;
+            
+            if (webview && webview.insertCSS) {
+              webview.insertCSS(scrollbarCSS).catch(err => {
+                console.warn('Erro ao injetar CSS de scrollbar no webview:', err);
+              });
+            }
+          } catch (error) {
+            console.warn('Erro ao tentar injetar CSS de scrollbar:', error);
+          }
         });
 
         webview.addEventListener('did-start-loading', () => {
@@ -169,7 +362,7 @@ function WebViewContainer({ tabs, activeTabId, hasError, onTitleUpdate, onUrlUpd
         webview.className = shouldShow ? 'webview' : 'webview hidden';
       }
     });
-  }, [tabs, activeTabId, hasError, onTitleUpdate, onUrlUpdate, onLoadingChange, onError]);
+  }, [tabs, activeTabId, hasError, onTitleUpdate, onUrlUpdate, onLoadingChange, onFaviconUpdate, onError]);
 
   // Limpar webviews de abas fechadas e destruir sessões isoladas
   useEffect(() => {

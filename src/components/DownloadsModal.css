@@ -64,6 +64,31 @@
   padding: 8px;
 }
 
+/* Scrollbar para Downloads List */
+.downloads-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.downloads-list::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border-light);
+}
+
+.downloads-list::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 5px;
+  border: 2px solid var(--bg-primary);
+  transition: background 0.2s ease;
+}
+
+.downloads-list::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-hover);
+}
+
+.downloads-list::-webkit-scrollbar-thumb:active {
+  background: var(--accent);
+}
+
 .download-item {
   display: flex;
   align-items: center;

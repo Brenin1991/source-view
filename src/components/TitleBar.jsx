@@ -76,6 +76,26 @@ function TitleBar({ tabs, activeTabId, onTabClick, onTabClose, onNewTab }) {
               className={`tab ${activeTabId === tab.id ? 'active' : ''}`}
               onClick={() => onTabClick && onTabClick(tab.id)}
             >
+              {tab.favicon ? (
+                <img 
+                  src={tab.favicon} 
+                  alt="" 
+                  className="tab-favicon"
+                  onError={(e) => {
+                    console.warn('❌ Erro ao carregar favicon:', tab.favicon, 'para tab', tab.id);
+                    // Se falhar ao carregar o favicon, esconder a imagem e mostrar placeholder
+                    e.target.style.display = 'none';
+                    const placeholder = e.target.nextElementSibling;
+                    if (placeholder && placeholder.classList.contains('tab-favicon-placeholder')) {
+                      placeholder.style.display = 'flex';
+                    }
+                  }}
+                  onLoad={() => {
+                    console.log('✅ Favicon carregado com sucesso:', tab.favicon);
+                  }}
+                />
+              ) : null}
+              <div className="tab-favicon-placeholder" style={{ display: tab.favicon ? 'none' : 'flex' }}></div>
               <span className="tab-title" title={tab.url || 'Nova Aba'}>
                 {tab.title || 'Nova Aba'}
               </span>

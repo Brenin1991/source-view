@@ -11,6 +11,7 @@ export function useTabs() {
       id: tabId,
       url: url,
       title: 'Nova Aba',
+      favicon: null,
       canGoBack: false,
       canGoForward: false,
       loading: false
@@ -122,6 +123,15 @@ export function useTabs() {
     }
   }, [activeTabId]);
 
+  const stopLoading = useCallback(() => {
+    if (activeTabId !== null) {
+      const webview = document.getElementById(`webview-${activeTabId}`);
+      if (webview && webview.stop) {
+        webview.stop();
+      }
+    }
+  }, [activeTabId]);
+
   const updateTabTitle = useCallback((tabId, title) => {
     setTabs(prev => prev.map(tab =>
       tab.id === tabId ? { ...tab, title } : tab
@@ -130,7 +140,7 @@ export function useTabs() {
 
   const updateTabUrl = useCallback((tabId, url) => {
     setTabs(prev => prev.map(tab =>
-      tab.id === tabId ? { ...tab, url } : tab
+      tab.id === tabId ? { ...tab, url, favicon: null } : tab
     ));
 
     // Atualizar canGoBack/canGoForward
@@ -144,6 +154,15 @@ export function useTabs() {
               canGoForward: webview.canGoForward() 
             }
           : tab
+      ));
+    }
+  }, []);
+
+  const updateTabFavicon = useCallback((tabId, favicon) => {
+    console.log('🔄 updateTabFavicon chamado para tab', tabId, 'com favicon:', favicon);
+    if (favicon) {
+      setTabs(prev => prev.map(tab =>
+        tab.id === tabId ? { ...tab, favicon } : tab
       ));
     }
   }, []);
@@ -174,8 +193,10 @@ export function useTabs() {
     goBack,
     goForward,
     reloadTab,
+    stopLoading,
     updateTabTitle,
     updateTabUrl,
+    updateTabFavicon,
     setTabError,
     clearTabError
   };

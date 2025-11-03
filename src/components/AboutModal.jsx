@@ -6,11 +6,11 @@ function AboutModal({ onClose }) {
     <div className="modal show" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>ℹ️ Sobre o Privacy Browser</h2>
+          <h2>ℹ️ Sobre o Catnip Secure Browser</h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         <div className="modal-body">
-          <p><strong>Privacy Browser</strong> é um navegador web focado em privacidade e segurança.</p>
+          <p><strong>Catnip Secure Browser</strong> é um navegador web focado em privacidade e segurança.</p>
           <h3>Recursos de Privacidade:</h3>
           <ul>
             <li>Bloqueio de rastreadores e anúncios</li>

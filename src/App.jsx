@@ -10,6 +10,7 @@ import AboutModal from './components/AboutModal';
 import FavoritesModal from './components/FavoritesModal';
 import HistoryModal from './components/HistoryModal';
 import DownloadsModal from './components/DownloadsModal';
+import PrivacyReportModal from './components/PrivacyReportModal';
 import { useTabs } from './hooks/useTabs';
 import { usePrivacySettings } from './hooks/usePrivacySettings';
 import { useTheme } from './hooks/useTheme';
@@ -27,8 +28,10 @@ function App() {
     goBack,
     goForward,
     reloadTab,
+    stopLoading,
     updateTabTitle,
     updateTabUrl,
+    updateTabFavicon,
     setTabError,
     clearTabError
   } = useTabs();
@@ -41,9 +44,11 @@ function App() {
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showDownloadsModal, setShowDownloadsModal] = useState(false);
+  const [showPrivacyReportModal, setShowPrivacyReportModal] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showHomePage, setShowHomePage] = useState(true);
   const [activeDownloadsCount, setActiveDownloadsCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Calcular activeTab primeiro para poder usar nos useEffects
   const activeTab = tabs.find(t => t.id === activeTabId);
@@ -200,7 +205,7 @@ function App() {
         await window.electronAPI.favoritesAdd({
           title: activeTab.title || activeTab.url,
           url: activeTab.url,
-          favicon: null
+          favicon: activeTab.favicon || null
         });
         setIsFavorite(true);
       }
@@ -231,6 +236,8 @@ function App() {
         onBack={goBack}
         onForward={goForward}
         onReload={reloadTab}
+        onStop={stopLoading}
+        isLoading={isLoading}
         onPrivacyClick={() => setShowSettingsModal(true)}
         onFavoritesClick={() => setShowFavoritesModal(true)}
         onHistoryClick={() => setShowHistoryModal(true)}
@@ -261,6 +268,19 @@ function App() {
               }
             }
           }}
+          onFaviconUpdate={(tabId, favicon) => {
+            updateTabFavicon(tabId, favicon);
+            // Atualizar favicon no histórico quando o favicon da página for atualizado
+            if (favicon && window.electronAPI) {
+              const tab = tabs.find(t => t.id === tabId);
+              if (tab && tab.url && tab.url !== 'about:blank' && !tab.url.startsWith('about:')) {
+                window.electronAPI.historyUpdateFavicon({
+                  url: tab.url,
+                  favicon: favicon
+                });
+              }
+            }
+          }}
           onUrlUpdate={(tabId, url) => {
             updateTabUrl(tabId, url);
             // Registrar no histórico (título será atualizado depois quando onTitleUpdate for chamado)
@@ -268,14 +288,19 @@ function App() {
               const tab = tabs.find(t => t.id === tabId);
               if (tab) {
                 // Usar URL como título temporário - será atualizado quando o título real chegar
+                // Tentar usar favicon da tab se disponível
                 window.electronAPI.historyAdd({
                   title: url, // Título temporário
-                  url: url
+                  url: url,
+                  favicon: tab.favicon || null
                 });
               }
             }
           }}
           onLoadingChange={(tabId, loading) => {
+            if (tabId === activeTabId) {
+              setIsLoading(loading);
+            }
             if (tabId === activeTabId && !loading && !errors[activeTabId]) {
               // Esconder home page apenas se realmente carregou uma URL válida
               const tab = tabs.find(t => t.id === tabId);
@@ -288,7 +313,10 @@ function App() {
         />
 
         {showHomePage && !errors[activeTabId] && (!activeTab || activeTab?.url === 'about:blank') && (
-          <HomePage onNavigate={handleNavigate} />
+          <HomePage 
+            onNavigate={handleNavigate}
+            onOpenPrivacyReport={() => setShowPrivacyReportModal(true)}
+          />
         )}
         
         {/* Página de erro - deve aparecer quando houver erro, mesmo se home page estiver false */}
@@ -348,6 +376,12 @@ function App() {
       {showDownloadsModal && (
         <DownloadsModal 
           onClose={() => setShowDownloadsModal(false)}
+        />
+      )}
+
+      {showPrivacyReportModal && (
+        <PrivacyReportModal 
+          onClose={() => setShowPrivacyReportModal(false)}
         />
       )}
     </div>

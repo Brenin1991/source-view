@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Histórico
   historyAdd: (data) => ipcRenderer.invoke('history-add', data),
   historyUpdateTitle: (data) => ipcRenderer.invoke('history-update-title', data),
+  historyUpdateFavicon: (data) => ipcRenderer.invoke('history-update-favicon', data),
   historyGet: (options) => ipcRenderer.invoke('history-get', options),
   historySearch: (query, limit) => ipcRenderer.invoke('history-search', query, limit),
   historyDelete: (id) => ipcRenderer.invoke('history-delete', id),
@@ -68,6 +69,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Fullscreen
   enterFullscreen: () => ipcRenderer.invoke('enter-fullscreen'),
   leaveFullscreen: () => ipcRenderer.invoke('leave-fullscreen'),
-  onFullscreenChanged: (callback) => ipcRenderer.on('fullscreen-changed', callback)
+  onFullscreenChanged: (callback) => ipcRenderer.on('fullscreen-changed', callback),
+  
+  // Utilitários
+  getIconPath: () => ipcRenderer.invoke('get-icon-path'),
+  
+  // Criptografia
+  encryptionGetStatus: () => ipcRenderer.invoke('encryption-get-status'),
+  encryptionSetEnabled: (enabled) => ipcRenderer.invoke('encryption-set-enabled', enabled),
+  encryptionReEncryptAll: () => ipcRenderer.invoke('encryption-re-encrypt-all')
 });
 

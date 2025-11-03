@@ -46,22 +46,40 @@ body {
     overflow: hidden;
 }
 
-/* Scrollbar */
+/* Scrollbar Customizado - Adaptável ao Tema */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 12px;
+    height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-light);
 }
 
 ::-webkit-scrollbar-thumb {
     background: var(--bg-tertiary);
-    border-radius: 4px;
+    border-radius: 6px;
+    border: 2px solid var(--bg-primary);
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--border);
+    background: var(--bg-hover);
+    border-color: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: var(--accent);
+}
+
+/* Scrollbar para Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-tertiary) var(--bg-primary);
+}
+
+*::-webkit-scrollbar-corner {
+    background: var(--bg-primary);
 }
 

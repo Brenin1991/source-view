@@ -80,7 +80,11 @@ function PrivacyReportModal({ onClose }) {
         <div className="report-content">
           <div className="stats-summary">
             <div className="stat-card total">
-              <div className="stat-icon">🛡️</div>
+              <div className="stat-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
               <div className="stat-info">
                 <div className="stat-value">{totalBlocked.toLocaleString()}</div>
                 <div className="stat-label">Total Bloqueado</div>
@@ -90,7 +94,12 @@ function PrivacyReportModal({ onClose }) {
 
           <div className="stats-grid">
             <div className="stat-card tracker">
-              <div className="stat-icon">👁️</div>
+              <div className="stat-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </div>
               <div className="stat-info">
                 <div className="stat-value">{stats.trackersBlocked.toLocaleString()}</div>
                 <div className="stat-label">Rastreadores Bloqueados</div>
@@ -99,7 +108,12 @@ function PrivacyReportModal({ onClose }) {
             </div>
 
             <div className="stat-card ads">
-              <div className="stat-icon">📢</div>
+              <div className="stat-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 11c0-1.1.9-2 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V11z"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
               <div className="stat-info">
                 <div className="stat-value">{stats.adsBlocked.toLocaleString()}</div>
                 <div className="stat-label">Anúncios Bloqueados</div>
@@ -108,7 +122,13 @@ function PrivacyReportModal({ onClose }) {
             </div>
 
             <div className="stat-card cookies">
-              <div className="stat-icon">🍪</div>
+              <div className="stat-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 2a10 10 0 0 0-2 19.5M12 2a10 10 0 0 1 2 19.5"/>
+                  <path d="M8 8h.01M16 8h.01M8 16h.01M16 16h.01"/>
+                </svg>
+              </div>
               <div className="stat-info">
                 <div className="stat-value">{stats.thirdPartyCookiesBlocked.toLocaleString()}</div>
                 <div className="stat-label">Cookies de Terceiros Bloqueados</div>
@@ -117,7 +137,14 @@ function PrivacyReportModal({ onClose }) {
             </div>
 
             <div className="stat-card scripts">
-              <div className="stat-icon">📜</div>
+              <div className="stat-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="9" y1="15" x2="15" y2="15"/>
+                  <line x1="12" y1="12" x2="12" y2="18"/>
+                </svg>
+              </div>
               <div className="stat-info">
                 <div className="stat-value">{stats.thirdPartyScriptsBlocked.toLocaleString()}</div>
                 <div className="stat-label">Scripts de Terceiros Bloqueados</div>

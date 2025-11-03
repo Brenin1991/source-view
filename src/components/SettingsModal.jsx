@@ -8,11 +8,77 @@ function SettingsModal({ privacySettings, onClose, onSave, onClearData }) {
   const [settings, setSettings] = useState(privacySettings);
   const [activeSection, setActiveSection] = useState('privacy');
   const [showReport, setShowReport] = useState(false);
+  const [encryptionEnabled, setEncryptionEnabled] = useState(false);
+  const [isLoadingEncryption, setIsLoadingEncryption] = useState(false);
   const { currentTheme, themes, changeTheme } = useTheme();
-
+  
   useEffect(() => {
     setSettings(privacySettings);
+    loadEncryptionStatus();
   }, [privacySettings]);
+  
+  const loadEncryptionStatus = async () => {
+    if (window.electronAPI) {
+      try {
+        const result = await window.electronAPI.encryptionGetStatus();
+        if (result.success) {
+          setEncryptionEnabled(result.enabled);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar status de criptografia:', error);
+      }
+    }
+  };
+  
+  const handleEncryptionToggle = async () => {
+    setIsLoadingEncryption(true);
+    try {
+      const newStatus = !encryptionEnabled;
+      const result = await window.electronAPI.encryptionSetEnabled(newStatus);
+      
+      if (result.success) {
+        setEncryptionEnabled(newStatus);
+        if (newStatus) {
+          window.alert('🔐 Criptografia habilitada! Os novos dados serão criptografados automaticamente.\n\nNota: Dados existentes continuarão descriptografados até serem atualizados. Você pode re-criptografar todos os dados existentes usando o botão abaixo.');
+        } else {
+          window.alert('⚠️ Criptografia desabilitada. Novos dados não serão mais criptografados.');
+        }
+      } else {
+        window.alert('Erro ao alterar status de criptografia: ' + (result.error || 'Erro desconhecido'));
+      }
+    } catch (error) {
+      console.error('Erro ao alterar criptografia:', error);
+      window.alert('Erro ao alterar criptografia: ' + error.message);
+    } finally {
+      setIsLoadingEncryption(false);
+    }
+  };
+  
+  const handleReEncryptAll = async () => {
+    if (!encryptionEnabled) {
+      window.alert('Por favor, habilite a criptografia primeiro.');
+      return;
+    }
+    
+    if (!window.confirm('⚠️ Esta ação irá re-criptografar todos os dados existentes (favoritos e histórico).\n\nIsso pode levar alguns segundos dependendo da quantidade de dados. Continuar?')) {
+      return;
+    }
+    
+    setIsLoadingEncryption(true);
+    try {
+      const result = await window.electronAPI.encryptionReEncryptAll();
+      if (result.success) {
+        window.alert('✅ ' + (result.message || 'Todos os dados foram re-criptografados com sucesso!'));
+      } else {
+        window.alert('Erro ao re-criptografar: ' + (result.error || result.message || 'Erro desconhecido'));
+      }
+    } catch (error) {
+      console.error('Erro ao re-criptografar:', error);
+      window.alert('Erro ao re-criptografar: ' + error.message);
+    } finally {
+      setIsLoadingEncryption(false);
+    }
+  };
 
   const handleToggle = (key) => {
     setSettings(prev => ({
@@ -324,6 +390,61 @@ function SettingsModal({ privacySettings, onClose, onSave, onClearData }) {
                         </svg>
                         Limpar Todos os Dados
                       </button>
+                    </div>
+                  )}
+                  
+                  {activeSection === 'security' && (
+                    <div className="encryption-section">
+                      <div className="setting-item encryption-item">
+                        <div className="setting-header">
+                          <label className="setting-switch">
+                            <input
+                              type="checkbox"
+                              checked={encryptionEnabled}
+                              onChange={handleEncryptionToggle}
+                              disabled={isLoadingEncryption}
+                            />
+                            <span className="switch-slider"></span>
+                          </label>
+                          <div className="setting-info">
+                            <span className="setting-label">Criptografia de Dados Locais</span>
+                            <span className="setting-desc">
+                              {encryptionEnabled 
+                                ? '🔐 Seus favoritos e histórico estão sendo criptografados usando AES-256-GCM. Apenas você pode ler esses dados.'
+                                : 'Criptografe seus favoritos e histórico para proteger contra acesso não autorizado. Usa criptografia AES-256-GCM.'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {encryptionEnabled && (
+                        <div className="encryption-actions">
+                          <button 
+                            className="btn-secondary" 
+                            onClick={handleReEncryptAll}
+                            disabled={isLoadingEncryption}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+                            </svg>
+                            {isLoadingEncryption ? 'Processando...' : 'Re-criptografar Todos os Dados'}
+                          </button>
+                          <p className="encryption-note">
+                            💡 Re-criptografa dados existentes que foram salvos antes da criptografia ser habilitada.
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div className="encryption-info">
+                        <h4>ℹ️ Como funciona:</h4>
+                        <ul>
+                          <li>• Usa algoritmo AES-256-GCM (Advanced Encryption Standard)</li>
+                          <li>• Chave gerada automaticamente e armazenada de forma segura</li>
+                          <li>• Apenas dados locais (favoritos, histórico) são criptografados</li>
+                          <li>• Descriptografia automática ao ler dados</li>
+                          <li>• Não afeta a navegação ou performance do navegador</li>
+                        </ul>
+                      </div>
                     </div>
                   )}
                 </>

@@ -89,6 +89,31 @@
   flex: 1;
 }
 
+/* Scrollbar para Modal Body */
+.modal-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border-light);
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 5px;
+  border: 2px solid var(--bg-primary);
+  transition: background 0.2s ease;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-hover);
+}
+
+.modal-body::-webkit-scrollbar-thumb:active {
+  background: var(--accent);
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;

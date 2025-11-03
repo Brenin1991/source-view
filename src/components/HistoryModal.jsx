@@ -124,6 +124,25 @@ function HistoryModal({ onClose, onNavigate }) {
             <div className="history-list">
               {history.map((item) => (
                 <div key={item.id} className="history-item">
+                  <div className="history-icon">
+                    {item.favicon ? (
+                      <img 
+                        src={item.favicon} 
+                        alt="" 
+                        onError={(e) => { 
+                          e.target.style.display = 'none';
+                          if (e.target.nextElementSibling) {
+                            e.target.nextElementSibling.style.display = 'flex';
+                          }
+                        }} 
+                      />
+                    ) : null}
+                    <div className="history-icon-placeholder" style={{ display: item.favicon ? 'none' : 'flex' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                      </svg>
+                    </div>
+                  </div>
                   <div className="history-info" onClick={() => handleNavigate(item.url)}>
                     <div className="history-title">{item.title}</div>
                     <div className="history-url">{item.url}</div>

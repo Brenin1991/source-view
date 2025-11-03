@@ -3,6 +3,10 @@ const path = require('path');
 const Store = require('electron-store');
 const db = require('./database/db');
 const fs = require('fs');
+const cryptoUtils = require('./utils/crypto');
+
+// Definir nome do aplicativo
+app.setName('Catnip Secure Browser');
 
 const store = new Store();
 
@@ -60,48 +64,177 @@ function applyPrivacySettings() {
     ses.webRequest.onBeforeRequest((details, callback) => {
       const url = details.url.toLowerCase();
       
-      // Lista de domínios de rastreamento conhecidos
+      // Lista expandida de domínios de rastreamento (baseada em EasyList/EasyPrivacy)
       const trackerDomains = [
+        // Google
         'doubleclick.net',
         'googleadservices.com',
         'googlesyndication.com',
         'google-analytics.com',
+        'googletagmanager.com',
+        'googletagservices.com',
+        'googleadapis.com',
+        'google-analytics.com',
+        'googlesyndication.com',
+        'gstatic.com/analytics',
+        'google.com/ads',
+        'google.com/analytics',
+        // Facebook
         'facebook.com/tr',
+        'facebook.com/connect',
         'facebook.net',
+        'facebookads.com',
+        'fbcdn.net',
+        'fb.com',
+        // Amazon
+        'amazon-adsystem.com',
+        'amazon.com/ads',
+        'assoc-amazon.com',
+        // Microsoft
+        'bing.com/maps',
+        'live.com/analytics',
+        'microsoftadvertising.com',
+        'msads.net',
+        // Adobe
+        'omniture.com',
+        '2o7.net',
+        'adobe.com/analytics',
+        'demdex.net',
+        // Outros rastreadores comuns
         'scorecardresearch.com',
         'quantserve.com',
         'advertising.com',
         'adsafeprotected.com',
         'moatads.com',
         'outbrain.com',
-        'taboola.com'
+        'taboola.com',
+        'adnxs.com',
+        'rubiconproject.com',
+        'pubmatic.com',
+        'openx.net',
+        'criteo.com',
+        'bluekai.com',
+        'crwdcntrl.net',
+        'rlcdn.com',
+        'serving-sys.com',
+        'adform.com',
+        'casalemedia.com',
+        'adtechus.com',
+        'media.net',
+        'adfox.ru',
+        'amazon-adsystem.com',
+        'adsrvr.org',
+        'adtechus.com',
+        'brealtime.com',
+        'chartbeat.com',
+        'clicktale.net',
+        'crazyegg.com',
+        'hotjar.com',
+        'mixpanel.com',
+        'segment.io',
+        'segment.com',
+        'newrelic.com',
+        'optimizely.com',
+        'uservoice.com',
+        'zendesk.com',
+        'pardot.com',
+        'marketo.com',
+        'hubspot.com/analytics',
+        'salesforce.com/analytics',
+        'adroll.com',
+        'klaviyo.com',
+        'mailchimp.com/track',
+        'marketo.net',
+        'pardot.com',
+        'salesforce.com/api',
+        // CDNs de anúncios
+        'cdnjs.cloudflare.com/ajax/libs/analytics',
+        'cdn.ampproject.org/rtv',
+        // Rastreadores de terceiros comuns
+        'sharethrough.com',
+        'teads.tv',
+        'yieldmo.com',
+        '33across.com',
+        'contextweb.com',
+        'districtm.io',
+        'freewheel.tv',
+        'indexexchange.com',
+        'lockerdome.com',
+        'sonobi.com',
+        'synacor.com',
+        'tremorhub.com',
+        'triplelift.com',
+        'video.unrulymedia.com',
+        'w55c.net'
       ];
 
-      // Lista de padrões de anúncios (mais específica para não bloquear imagens legítimas)
-      const adPatterns = [
+      // Padrões comuns de URLs de rastreadores/anúncios
+      const trackerPatterns = [
+        '/analytics.js',
+        '/analytics.min.js',
+        '/gtm.js',
+        '/gtag.js',
+        '/ga.js',
+        '/gaq.js',
+        '/facebook.js',
+        '/facebook-pixel',
+        '/pixel.js',
+        '/tracking.js',
+        '/track.js',
+        '/beacon',
+        '/click',
+        '/impression',
+        '/event',
+        '/collect',
+        '/pageview',
         '/ads.js',
         '/advertisement.js',
         '/advertising.js',
         '/banner.js',
         '/adsense',
         '/adserving',
-        '/adservice'
+        '/adservice',
+        '/adsystem',
+        '/tracker',
+        '/tracking',
+        '/analytics',
+        '/metrics',
+        '/stats',
+        '/pixel',
+        '/beacon'
       ];
 
-      // Não bloquear imagens, vídeos ou CSS mesmo se parecerem anúncios
-      if (['image', 'media', 'stylesheet', 'font'].includes(details.resourceType)) {
+      // Não bloquear imagens, vídeos, CSS ou fontes (exceto se for claramente rastreador)
+      if (['stylesheet', 'font'].includes(details.resourceType)) {
         callback({});
         return;
       }
 
-      const isTracker = trackerDomains.some(domain => url.includes(domain));
-      const isAd = (adPatterns.some(pattern => url.includes(pattern)) || 
-                   details.url.includes('googletagmanager.com') ||
-                   details.url.includes('google-analytics.com')) &&
-                   details.resourceType === 'script'; // Apenas bloquear scripts de anúncios
+      // Verificar se é domínio de rastreador
+      const isTrackerDomain = trackerDomains.some(domain => url.includes(domain));
+      
+      // Verificar se URL contém padrões de rastreadores
+      const hasTrackerPattern = trackerPatterns.some(pattern => url.includes(pattern));
+      
+      // Verificar se é script de analytics/tracking
+      const isTrackingScript = details.resourceType === 'script' && (
+        url.includes('analytics') ||
+        url.includes('tracking') ||
+        url.includes('tracker') ||
+        url.includes('pixel') ||
+        url.includes('beacon') ||
+        url.includes('gtm') ||
+        url.includes('gtag') ||
+        url.includes('facebook-pixel') ||
+        url.includes('facebook.com/tr') ||
+        url.includes('doubleclick')
+      );
+
+      const isTracker = isTrackerDomain || (isTrackingScript && details.resourceType === 'script');
+      const isAd = hasTrackerPattern || isTrackerDomain;
 
       if ((privacySettings.blockTrackers && isTracker && details.resourceType !== 'image' && details.resourceType !== 'media') || 
-          (privacySettings.blockAds && isAd)) {
+          (privacySettings.blockAds && isAd && details.resourceType !== 'image' && details.resourceType !== 'media')) {
         // Registrar estatística
         try {
           const urlObj = new URL(details.url);
@@ -507,10 +640,12 @@ ipcMain.handle('set-privacy-settings', (event, settings) => {
   privacySettings = { ...privacySettings, ...settings };
   store.set('privacySettings', privacySettings);
   
-  // Recriar janela para aplicar novas configurações
-  const windows = BrowserWindow.getAllWindows();
-  windows.forEach(win => {
-    win.reload();
+  // Reaplicar configurações de privacidade na sessão padrão
+  applyPrivacySettings();
+  
+  // Reaplicar configurações em todas as sessões isoladas
+  isolatedSessions.forEach((tabSession, tabId) => {
+    applyPrivacySettingsToSession(tabSession);
   });
   
   return privacySettings;
@@ -649,9 +784,9 @@ ipcMain.handle('favorites-check', async (event, url) => {
 });
 
 // ========== HANDLERS PARA HISTÓRICO ==========
-ipcMain.handle('history-add', async (event, { title, url }) => {
+ipcMain.handle('history-add', async (event, { title, url, favicon }) => {
   try {
-    await db.insertHistory(title, url);
+    await db.insertHistory(title, url, favicon || null);
     return { success: true };
   } catch (error) {
     console.error('Erro ao adicionar ao histórico:', error);
@@ -665,6 +800,16 @@ ipcMain.handle('history-update-title', async (event, { url, title }) => {
     return { success: true };
   } catch (error) {
     console.error('Erro ao atualizar título do histórico:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('history-update-favicon', async (event, { url, favicon }) => {
+  try {
+    await db.updateHistoryFavicon(url, favicon);
+    return { success: true };
+  } catch (error) {
+    console.error('Erro ao atualizar favicon do histórico:', error);
     return { success: false, error: error.message };
   }
 });
@@ -828,45 +973,177 @@ function applyPrivacySettingsToSession(ses) {
     ses.webRequest.onBeforeRequest((details, callback) => {
       const url = details.url.toLowerCase();
       
+      // Lista expandida de domínios de rastreamento (baseada em EasyList/EasyPrivacy)
       const trackerDomains = [
+        // Google
         'doubleclick.net',
         'googleadservices.com',
         'googlesyndication.com',
         'google-analytics.com',
+        'googletagmanager.com',
+        'googletagservices.com',
+        'googleadapis.com',
+        'google-analytics.com',
+        'googlesyndication.com',
+        'gstatic.com/analytics',
+        'google.com/ads',
+        'google.com/analytics',
+        // Facebook
         'facebook.com/tr',
+        'facebook.com/connect',
         'facebook.net',
+        'facebookads.com',
+        'fbcdn.net',
+        'fb.com',
+        // Amazon
+        'amazon-adsystem.com',
+        'amazon.com/ads',
+        'assoc-amazon.com',
+        // Microsoft
+        'bing.com/maps',
+        'live.com/analytics',
+        'microsoftadvertising.com',
+        'msads.net',
+        // Adobe
+        'omniture.com',
+        '2o7.net',
+        'adobe.com/analytics',
+        'demdex.net',
+        // Outros rastreadores comuns
         'scorecardresearch.com',
         'quantserve.com',
         'advertising.com',
         'adsafeprotected.com',
         'moatads.com',
         'outbrain.com',
-        'taboola.com'
+        'taboola.com',
+        'adnxs.com',
+        'rubiconproject.com',
+        'pubmatic.com',
+        'openx.net',
+        'criteo.com',
+        'bluekai.com',
+        'crwdcntrl.net',
+        'rlcdn.com',
+        'serving-sys.com',
+        'adform.com',
+        'casalemedia.com',
+        'adtechus.com',
+        'media.net',
+        'adfox.ru',
+        'amazon-adsystem.com',
+        'adsrvr.org',
+        'adtechus.com',
+        'brealtime.com',
+        'chartbeat.com',
+        'clicktale.net',
+        'crazyegg.com',
+        'hotjar.com',
+        'mixpanel.com',
+        'segment.io',
+        'segment.com',
+        'newrelic.com',
+        'optimizely.com',
+        'uservoice.com',
+        'zendesk.com',
+        'pardot.com',
+        'marketo.com',
+        'hubspot.com/analytics',
+        'salesforce.com/analytics',
+        'adroll.com',
+        'klaviyo.com',
+        'mailchimp.com/track',
+        'marketo.net',
+        'pardot.com',
+        'salesforce.com/api',
+        // CDNs de anúncios
+        'cdnjs.cloudflare.com/ajax/libs/analytics',
+        'cdn.ampproject.org/rtv',
+        // Rastreadores de terceiros comuns
+        'sharethrough.com',
+        'teads.tv',
+        'yieldmo.com',
+        '33across.com',
+        'contextweb.com',
+        'districtm.io',
+        'freewheel.tv',
+        'indexexchange.com',
+        'lockerdome.com',
+        'sonobi.com',
+        'synacor.com',
+        'tremorhub.com',
+        'triplelift.com',
+        'video.unrulymedia.com',
+        'w55c.net'
       ];
 
-      const adPatterns = [
+      // Padrões comuns de URLs de rastreadores/anúncios
+      const trackerPatterns = [
+        '/analytics.js',
+        '/analytics.min.js',
+        '/gtm.js',
+        '/gtag.js',
+        '/ga.js',
+        '/gaq.js',
+        '/facebook.js',
+        '/facebook-pixel',
+        '/pixel.js',
+        '/tracking.js',
+        '/track.js',
+        '/beacon',
+        '/click',
+        '/impression',
+        '/event',
+        '/collect',
+        '/pageview',
         '/ads.js',
         '/advertisement.js',
         '/advertising.js',
         '/banner.js',
         '/adsense',
         '/adserving',
-        '/adservice'
+        '/adservice',
+        '/adsystem',
+        '/tracker',
+        '/tracking',
+        '/analytics',
+        '/metrics',
+        '/stats',
+        '/pixel',
+        '/beacon'
       ];
 
-      if (['image', 'media', 'stylesheet', 'font'].includes(details.resourceType)) {
+      // Não bloquear imagens, vídeos, CSS ou fontes (exceto se for claramente rastreador)
+      if (['stylesheet', 'font'].includes(details.resourceType)) {
         callback({});
         return;
       }
 
-      const isTracker = trackerDomains.some(domain => url.includes(domain));
-      const isAd = (adPatterns.some(pattern => url.includes(pattern)) || 
-                   details.url.includes('googletagmanager.com') ||
-                   details.url.includes('google-analytics.com')) &&
-                   details.resourceType === 'script';
+      // Verificar se é domínio de rastreador
+      const isTrackerDomain = trackerDomains.some(domain => url.includes(domain));
+      
+      // Verificar se URL contém padrões de rastreadores
+      const hasTrackerPattern = trackerPatterns.some(pattern => url.includes(pattern));
+      
+      // Verificar se é script de analytics/tracking
+      const isTrackingScript = details.resourceType === 'script' && (
+        url.includes('analytics') ||
+        url.includes('tracking') ||
+        url.includes('tracker') ||
+        url.includes('pixel') ||
+        url.includes('beacon') ||
+        url.includes('gtm') ||
+        url.includes('gtag') ||
+        url.includes('facebook-pixel') ||
+        url.includes('facebook.com/tr') ||
+        url.includes('doubleclick')
+      );
+
+      const isTracker = isTrackerDomain || (isTrackingScript && details.resourceType === 'script');
+      const isAd = hasTrackerPattern || isTrackerDomain;
 
       if ((settings.blockTrackers && isTracker && details.resourceType !== 'image' && details.resourceType !== 'media') || 
-          (settings.blockAds && isAd)) {
+          (settings.blockAds && isAd && details.resourceType !== 'image' && details.resourceType !== 'media')) {
         // Registrar estatística (mesma lógica da sessão padrão)
         try {
           const urlObj = new URL(details.url);
@@ -1031,6 +1308,45 @@ ipcMain.handle('set-theme', (event, theme) => {
   return { success: true };
 });
 
+// IPC handler para obter caminho do ícone (retorna como base64 data URL)
+ipcMain.handle('get-icon-path', () => {
+  // Tentar diferentes caminhos possíveis
+  let iconPath;
+  
+  // Em produção (packaged)
+  if (app.isPackaged) {
+    iconPath = path.join(process.resourcesPath, 'assets', 'icon.png');
+    // Se não encontrar, tentar __dirname
+    if (!fs.existsSync(iconPath)) {
+      iconPath = path.join(__dirname, 'assets', 'icon.png');
+    }
+  } else {
+    // Em desenvolvimento
+    iconPath = path.join(__dirname, 'assets', 'icon.png');
+    // Se não encontrar, tentar caminho relativo ao projeto
+    if (!fs.existsSync(iconPath)) {
+      iconPath = path.join(process.cwd(), 'assets', 'icon.png');
+    }
+  }
+  
+  // Se não encontrou, retornar caminho relativo para o renderer tentar carregar
+  if (!fs.existsSync(iconPath)) {
+    console.warn('⚠️ Arquivo icon.png não encontrado em:', iconPath);
+    return '/assets/icon.png'; // Fallback para caminho relativo
+  }
+  
+  try {
+    // Ler o arquivo e converter para base64 data URL
+    const imageBuffer = fs.readFileSync(iconPath);
+    const base64Image = imageBuffer.toString('base64');
+    return `data:image/png;base64,${base64Image}`;
+  } catch (error) {
+    console.error('Erro ao ler icon.png:', error);
+    // Fallback para caminho relativo
+    return '/assets/icon.png';
+  }
+});
+
 // IPC handlers para estatísticas de privacidade
 ipcMain.handle('get-privacy-stats', (event) => {
   // Converter topTrackers object em array ordenado
@@ -1059,6 +1375,63 @@ ipcMain.handle('reset-privacy-stats', (event) => {
   };
   store.set('privacyStats', privacyStats);
   return { success: true };
+});
+
+// ========== HANDLERS PARA CRIPTOGRAFIA ==========
+ipcMain.handle('encryption-get-status', () => {
+  try {
+    return {
+      success: true,
+      enabled: cryptoUtils.isEncryptionEnabled()
+    };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('encryption-set-enabled', async (event, enabled) => {
+  try {
+    cryptoUtils.setEncryptionEnabled(enabled);
+    
+    // Se habilitando pela primeira vez, re-criptografar dados existentes
+    if (enabled) {
+      console.log('🔐 Criptografia habilitada - os novos dados serão criptografados');
+      // Nota: Dados existentes continuarão descriptografados até serem atualizados
+      // Uma migração completa pode ser feita se necessário
+    } else {
+      console.log('⚠️ Criptografia desabilitada');
+    }
+    
+    return { success: true, enabled };
+  } catch (error) {
+    console.error('Erro ao alterar status de criptografia:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('encryption-re-encrypt-all', async () => {
+  try {
+    if (!cryptoUtils.isEncryptionEnabled()) {
+      return { success: false, message: 'Criptografia não está habilitada' };
+    }
+    
+    // Re-criptografar todos os favoritos
+    const favorites = await db.getAllFavorites();
+    for (const fav of favorites) {
+      await db.insertFavorite(fav.title, fav.url, fav.favicon);
+    }
+    
+    // Re-criptografar todo o histórico (limitado a 1000 para não travar)
+    const history = await db.getHistory(1000, 0);
+    for (const item of history) {
+      await db.insertHistory(item.title, item.url, item.favicon);
+    }
+    
+    return { success: true, message: 'Todos os dados foram re-criptografados' };
+  } catch (error) {
+    console.error('Erro ao re-criptografar dados:', error);
+    return { success: false, error: error.message };
+  }
 });
 
 // Listener global para capturar todos os downloads (inclusive de webviews)

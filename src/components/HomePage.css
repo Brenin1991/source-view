@@ -4,20 +4,283 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--bg-primary);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     display: flex;
     align-items: flex-start;
     justify-content: center;
     overflow-y: auto;
     overflow-x: hidden;
     z-index: 10;
-    padding-top: 120px;
+    padding-top: 60px;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .home-content {
     width: 100%;
     max-width: 800px;
     padding: 0 40px 60px;
+}
+
+.home-header {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    margin-bottom: 48px;
+    align-items: center;
+}
+
+.browser-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.browser-logo {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    animation: floatLogo 3s ease-in-out infinite;
+}
+
+@keyframes floatLogo {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+.logo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 16px;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.logo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    border: 2px solid var(--border);
+}
+
+.browser-name {
+    font-size: 36px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    letter-spacing: -0.02em;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.privacy-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.privacy-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+}
+
+.privacy-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.privacy-report-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.privacy-report-button:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.privacy-report-button:active {
+    transform: translateY(0);
+}
+
+.privacy-report-button svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: var(--accent);
+}
+
+.privacy-report-button span {
+    color: var(--text-primary);
+}
+
+.privacy-stat-card.total {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+}
+
+.privacy-stat-card .stat-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+.privacy-stat-card .stat-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.privacy-stat-card .stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.privacy-stat-card .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+}
+
+.privacy-stat-card .stat-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.privacy-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.privacy-stat-mini {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.privacy-stat-mini:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--border);
+    transform: translateY(-2px);
+}
+
+.privacy-stat-mini.tracker {
+    border-left: 3px solid #ff6b6b;
+}
+
+.privacy-stat-mini.ads {
+    border-left: 3px solid #4ecdc4;
+}
+
+.privacy-stat-mini.cookies {
+    border-left: 3px solid #ffd93d;
+}
+
+.privacy-stat-mini.scripts {
+    border-left: 3px solid #95a5a6;
+}
+
+.privacy-stat-mini .mini-stat-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.privacy-stat-mini .mini-stat-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.privacy-stat-mini .mini-stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.privacy-stat-mini .mini-stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.privacy-stat-mini .mini-stat-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .home-main {
@@ -174,22 +437,29 @@
     font-weight: 400;
 }
 
-/* Scrollbar */
+/* Scrollbar Customizado para HomePage */
 .home-page::-webkit-scrollbar {
-    width: 8px;
+    width: 12px;
 }
 
 .home-page::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-light);
 }
 
 .home-page::-webkit-scrollbar-thumb {
     background: var(--bg-tertiary);
-    border-radius: 4px;
+    border-radius: 6px;
+    border: 2px solid var(--bg-primary);
+    transition: background 0.2s ease;
 }
 
 .home-page::-webkit-scrollbar-thumb:hover {
-    background: var(--border);
+    background: var(--bg-hover);
+}
+
+.home-page::-webkit-scrollbar-thumb:active {
+    background: var(--accent);
 }
 
 /* Animações sutis */

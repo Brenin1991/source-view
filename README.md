@@ -1,4 +1,4 @@
-# 🛡️ Privacy Browser
+# 🐱 Catnip Secure Browser
 
 Um navegador web totalmente focado em **privacidade e segurança**, construído com Electron.
 
