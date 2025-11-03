@@ -3,7 +3,7 @@
 Um navegador web totalmente focado em privacidade e segurança, construído com Electron.
 
 <div align="center">
-  <img src="assets/nico.JPEG" alt="Nico protegendo sua privacidade" width="600" />
+  <img src="docs/nico.JPEG" alt="Nico protegendo sua privacidade" width="600" />
   <p><em>Nico aqui, garantindo que ninguém rastreie você pela internet. Sério, ele não deixa passar nada.</em></p>
 </div>
 
