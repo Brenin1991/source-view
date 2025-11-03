@@ -21,7 +21,10 @@
     "electron",
     "react"
   ],
-  "author": "",
+  "author": {
+    "name": "Catnip",
+    "email": "catnip@example.com"
+  },
   "license": "MIT",
   "devDependencies": {
     "@types/react": "^18.2.43",
@@ -43,14 +46,17 @@
   "build": {
     "appId": "com.catnip.securebrowser",
     "productName": "Catnip Secure Browser",
+    "copyright": "Copyright © 2024 Catnip Secure Browser",
     "directories": {
-      "output": "dist"
+      "output": "dist",
+      "buildResources": "build"
     },
     "files": [
       "dist-electron/renderer/**/*",
       "main.js",
       "preload.js",
       "database/**/*",
+      "utils/**/*",
       "assets/**/*",
       "node_modules/electron-store/**/*",
       "node_modules/sql.js/**/*",
@@ -65,22 +71,80 @@
     ],
     "win": {
       "target": [
-        "nsis",
-        "portable"
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "icon": "assets/icon.png",
-      "artifactName": "${productName}-${version}-setup.${ext}"
+      "artifactName": "${productName}-${version}-${arch}-setup.${ext}",
+      "publisherName": "Catnip",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Catnip Secure Browser",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true,
+      "menuCategory": "Network",
+      "artifactName": "${productName}-${version}-${arch}-setup.${ext}"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-${arch}-portable.${ext}"
     },
     "mac": {
-      "target": "dmg",
-      "icon": "assets/icon.icns"
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.utilities",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "${productName} ${version}",
+      "icon": "assets/icon.icns",
+      "contents": [
+        {
+          "x": 410,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        }
+      ],
+      "background": null,
+      "window": {
+        "width": 540,
+        "height": 380
+      },
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "linux": {
       "target": [
-        "AppImage",
-        "deb"
+        "deb",
+        "rpm"
       ],
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "category": "Network",
+      "maintainer": "Catnip <catnip@example.com>",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     }
   }
 }
