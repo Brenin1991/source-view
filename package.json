@@ -62,13 +62,6 @@
       "node_modules/sql.js/**/*",
       "package.json"
     ],
-    "extraFiles": [
-      {
-        "from": "database",
-        "to": "database",
-        "filter": ["**/*"]
-      }
-    ],
     "win": {
       "target": [
         {
