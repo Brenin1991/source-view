@@ -31,6 +31,49 @@ Um navegador web totalmente focado em privacidade e segurança, construído com 
 - Estatísticas de privacidade em tempo real
 - Painel de configurações de privacidade completo
 
+## Screenshots
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="docs/01.png" alt="Screenshot 1" width="100%" />
+      <br />
+      <em>Screenshot 1</em>
+    </td>
+    <td align="center">
+      <img src="docs/02.png" alt="Screenshot 2" width="100%" />
+      <br />
+      <em>Screenshot 2</em>
+    </td>
+    <td align="center">
+      <img src="docs/03.png" alt="Screenshot 3" width="100%" />
+      <br />
+      <em>Screenshot 3</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="docs/04.png" alt="Screenshot 4" width="100%" />
+      <br />
+      <em>Screenshot 4</em>
+    </td>
+    <td align="center">
+      <img src="docs/05.png" alt="Screenshot 5" width="100%" />
+      <br />
+      <em>Screenshot 5</em>
+    </td>
+    <td align="center">
+      <img src="docs/06.png" alt="Screenshot 6" width="100%" />
+      <br />
+      <em>Screenshot 6</em>
+    </td>
+  </tr>
+</table>
+
+</div>
+
 ## Instalação
 
 ### Pré-requisitos
